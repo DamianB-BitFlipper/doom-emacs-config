@@ -79,8 +79,8 @@
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
   :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
               ("TAB" . 'copilot-accept-completion)
+              ("<tab>" . 'copilot-accept-completion)
               ("C-TAB" . 'copilot-accept-completion-by-word)
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
 
@@ -150,7 +150,18 @@
 ;; Disable auto-comments
 (setq comment-line-break-function nil)
 
-;; Remap some key bindings
+;;
+;; Remap some keybindings
+;;
+
+;; Set the keybindings after package has been loaded
+;; to overwrite any settings that may have been set
+(after! company
+  (map! :map company-active-map
+        "TAB" #'company-complete-selection
+        "<tab>" #'company-complete-selection))
+
+;; Keybindings with no package loading dependency
 (map! :map
       'override
       :desc "Activate Conda Env" "s-e" #'conda-env-activate
