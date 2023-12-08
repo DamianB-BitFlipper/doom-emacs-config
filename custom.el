@@ -3,7 +3,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(c-basic-offset 2)
  '(global-visual-line-mode t)
  '(ispell-dictionary "en_US")
  '(kill-whole-line t)

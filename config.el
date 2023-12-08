@@ -109,9 +109,9 @@
 
       (let ((session-at-creation (dap--cur-active-session-or-die))
             (out-buffer-name (format "*%s out*" (dap--debug-session-name (dap--cur-active-session-or-die)))))
-        (when (get-buffer-window out-buffer-name)
-          ;; Expand the output buffer a little
-          (window-resize (select-window (get-buffer-window out-buffer-name) nil) 20 t))
+        (when (get-buffer-window out-buffer-name) a
+              ;; Expand the output buffer a little
+              (window-resize (select-window (get-buffer-window out-buffer-name) nil) 20 t))
         (add-hook 'dap-terminated-hook
                   (lambda (session)
                     (when (eq session session-at-creation)
@@ -218,6 +218,30 @@
 
 ;; Disable auto-comments
 (setq comment-line-break-function nil)
+
+;; Set the recommended length of a single line in a git commit message to 68 characters
+(after! magit
+  (setq git-commit-summary-max-length 68))
+
+;; Create a modified Stroustrup style for c/c++ files
+(after! cc-mode
+  (c-add-style "modified-stroustrup"
+               '("stroustrup"
+                 (c-basic-offset . 2)))
+  (setq c-default-style "modified-stroustrup")
+
+  ;; Set clang-format to use the modified Stroustrup style
+  (set-formatter!
+    'clang-format
+    '("clang-format"
+      (format "--assume-filename=%S" (or buffer-file-name mode-result ""))
+      (format "--style=file:%s/.doom.d/clang-format-modified-stroustrup.yaml" (expand-file-name "~")))
+    :modes
+    '(c-mode
+      c++-mode
+      java-mode
+      objc-mode
+      protobuf-mode)))
 
 ;;
 ;; Remap some keybindings
