@@ -92,6 +92,57 @@
   (require 'dap-python)
   (setq dap-python-debugger 'debugpy)
 
+  ;; Make the buffer read-only when dap is running
+  ;; Source: https://emacs-lsp.github.io/dap-mode/page/how-to/#activate-minor-modes-when-stepping-through-code
+  (define-minor-mode +dap-running-session-mode
+    "A mode for adding keybindings to running sessions"
+    nil
+    nil
+    (make-sparse-keymap)
+    nil
+    ;; The following code adds to the dap-terminated-hook
+    ;; so that this minor mode will be deactivated when the debugger finishes
+    (when +dap-running-session-mode
+      ;; Make all buffers in debug mode read only except for the REPL
+      (unless (equal (buffer-name) "*dap-ui-repl*")
+        (read-only-mode 1))
+
+      (let ((session-at-creation (dap--cur-active-session-or-die))
+            (out-buffer-name (format "*%s out*" (dap--debug-session-name (dap--cur-active-session-or-die)))))
+        (when (get-buffer-window out-buffer-name)
+          ;; Expand the output buffer a little
+          (window-resize (select-window (get-buffer-window out-buffer-name) nil) 20 t))
+        (add-hook 'dap-terminated-hook
+                  (lambda (session)
+                    (when (eq session session-at-creation)
+                      (read-only-mode -1)
+                      ;; Kill some stragling buffers that don't get cleaned up
+                      (when (get-buffer "*dap-ui-repl*")
+                        (kill-buffer "*dap-ui-repl*"))
+                      (when (get-buffer out-buffer-name)
+                        (kill-buffer out-buffer-name))
+                      (+dap-running-session-mode -1)))))))
+
+  ;; Activate this minor mode when dap is initialized
+  (add-hook 'dap-session-created-hook '+dap-running-session-mode)
+
+  ;; Activate this minor mode when hitting a breakpoint in another file
+  (add-hook 'dap-stopped-hook '+dap-running-session-mode)
+
+  ;; Activate this minor mode when stepping into code in another file
+  (add-hook 'dap-stack-frame-changed-hook (lambda (session)
+                                            (when (dap--session-running session)
+                                              (+dap-running-session-mode 1))))
+
+  ;; Activate the REPL when the debugger is started
+  (add-hook 'dap-session-created-hook
+            (lambda (arg)
+              (call-interactively #'dap-ui-repl)))
+
+  ;; Move the cursor to the REPL window after the DAP server has responded
+  (add-hook 'dap-executed-hook
+            (lambda (arg1 arg2) (select-window (get-buffer-window "*dap-ui-repl*") nil)))
+
   ;; Make dap-debugging have some reasonable templates
   (dap-register-debug-template
    "cpptools::Run Configuration"
@@ -103,6 +154,15 @@
          :program "${workspaceFolder}/${fileBasenameNoExtension}"
          :cwd "${workspaceFolder}"))
   )
+
+(after! dap-ui
+  (setq dap-ui-buffer-configurations
+        `((,dap-ui--locals-buffer . ((side . right) (slot . 1) (window-width . 0.20)))
+          (,dap-ui--expressions-buffer . ((side . right) (slot . 2) (window-width . 0.20)))
+          (,dap-ui--sessions-buffer . ((side . right) (slot . 3) (window-width . 0.20)))
+          (,dap-ui--breakpoints-buffer . ((side . left) (slot . 2) (window-width . ,treemacs-width)))
+          (,dap-ui--debug-window-buffer . ((side . left) (slot . 3) (window-width . 0.2)))
+          (,dap-ui--repl-buffer . ((side . bottom) (slot . 1) (window-width . 0.2))))))
 
 ;; Give dap some reasonable key bindings
 (map! :map dap-mode-map
@@ -137,7 +197,16 @@
       :desc "dap breakpoint condition"   "c" #'dap-breakpoint-condition
       :desc "dap breakpoint hit count"   "h" #'dap-breakpoint-hit-condition
       :desc "dap breakpoint log message" "l" #'dap-breakpoint-log-message
-      :desc "dap breakpoint delete all"  "d" #'dap-breakpoint-delete-all)
+      :desc "dap breakpoint delete"      "d" #'dap-breakpoint-delete
+      :desc "dap breakpoint delete all"  "D" #'dap-breakpoint-delete-all)
+
+(map! :map +dap-running-session-mode-map
+      :desc "next" "C-n" #'dap-next
+      :desc "continue" "C-c" #'dap-continue
+      :desc "step in" "C-i" #'dap-step-in
+      :desc "step out" "C-o" #'dap-step-out
+      :desc "restart" "C-r" #'dap-debug-restart
+      :desc "quit" "C-q" #'+debugger/quit)
 
 ;; Make the command key the M meta and option super ('s')
 (setq mac-command-modifier 'meta)
