@@ -109,9 +109,9 @@
 
       (let ((session-at-creation (dap--cur-active-session-or-die))
             (out-buffer-name (format "*%s out*" (dap--debug-session-name (dap--cur-active-session-or-die)))))
-        (when (get-buffer-window out-buffer-name) a
-              ;; Expand the output buffer a little
-              (window-resize (select-window (get-buffer-window out-buffer-name) nil) 20 t))
+        (when (get-buffer-window out-buffer-name)
+          ;; Expand the output buffer a little
+          (window-resize (select-window (get-buffer-window out-buffer-name) nil) 20 t))
         (add-hook 'dap-terminated-hook
                   (lambda (session)
                     (when (eq session session-at-creation)
@@ -145,15 +145,24 @@
 
   ;; Make dap-debugging have some reasonable templates
   (dap-register-debug-template
-   "cpptools::Run Configuration"
+   "C++ :: Debug"
    (list :type "cppdbg"
          :request "launch"
-         :name "cpptools::Run Configuration"
+         :name "C++ :: Debug"
          :MIMode "lldb"
          :TargetArchitecture "arm64"
-         :program "${workspaceFolder}/${fileBasenameNoExtension}"
+         :program "${fileDirname}/${fileBasenameNoExtension}"
          :cwd "${workspaceFolder}"))
-  )
+
+  (dap-register-debug-template
+   "Python :: Debug"
+   (list :type "python"
+         :args "-m debugpy"
+         :request "launch"
+         :name "Python :: Debug"
+         :module nil
+         :program "${fileDirname}/${fileBasename}"
+         :cwd "${fileDirname}")))
 
 (after! dap-ui
   (setq dap-ui-buffer-configurations
