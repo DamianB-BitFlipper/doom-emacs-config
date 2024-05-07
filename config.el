@@ -266,9 +266,6 @@
 ;; Keybindings with no package loading dependency
 (map! :map
       'override
-      :desc "Activate Conda Env" "s-e" #'conda-env-activate
-      :desc "Deactivate Conda Env" "s-E" #'conda-env-deactivate
-
       :desc "Go to beginning of function" "C-M-;" #'beginning-of-defun
       :desc "Go to end of function" "C-M-'" #'end-of-defun
 
