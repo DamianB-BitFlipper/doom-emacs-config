@@ -263,11 +263,16 @@
         "TAB" #'company-complete-selection
         "<tab>" #'company-complete-selection))
 
+;; Disable poetry-tracking-mode in Python buffers
+(after! python
+  (remove-hook 'python-mode-hook #'poetry-tracking-mode))
+
 ;; Keybindings with no package loading dependency
 (map! :map
       'override
       :desc "Go to beginning of function" "C-M-;" #'beginning-of-defun
       :desc "Go to end of function" "C-M-'" #'end-of-defun
+      :desc "Avy goto char timer" "C-c j" #'avy-goto-char-timer
 
       :leader
       :desc "Compile" "c C" #'compile
