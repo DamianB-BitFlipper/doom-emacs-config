@@ -34,15 +34,6 @@
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-one)
 
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
-;; (Moved to bottom customize setq)
-
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-;; (Moved to bottom customize setq)
-
-
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
 ;;
@@ -217,20 +208,14 @@
       :desc "restart" "C-r" #'dap-debug-restart
       :desc "quit" "C-q" #'+debugger/quit)
 
-;; Make the command key the M meta and option super ('s')
-(setq mac-command-modifier 'meta)
-(setq mac-option-modifier 'super)
-
 ;; Set dash-docs to use the system default browser
 (after! dash-docs
   (setq dash-docs-browser-func #'browse-url))
 
-;; Disable auto-comments
-(setq comment-line-break-function nil)
-
 ;; Set the recommended length of a single line in a git commit message to 68 characters
 (after! magit
-  (setq git-commit-summary-max-length 68))
+  (setq git-commit-summary-max-length 68)
+  (setq magit-todos-insert-after '(bottom)))
 
 ;; Create a modified Stroustrup style for c/c++ files
 (after! cc-mode
@@ -263,19 +248,39 @@
         "TAB" #'company-complete-selection
         "<tab>" #'company-complete-selection))
 
+;; The (after! avy) does not work, so just go direct
+(map! :leader
+      :desc "Avy goto char timer" "j" #'avy-goto-char-timer)
+
 ;; Disable poetry-tracking-mode in Python buffers
 (after! python
   (remove-hook 'python-mode-hook #'poetry-tracking-mode))
 
 ;; Enable auto-revert-mode for all buffers
-(global-auto-revert-mode t)
-(setq global-auto-revert-non-file-buffers t)  ; Also auto-revert buffers like dired
-(setq auto-revert-verbose nil)                ; Don't show a message every time a buffer is reverted
+(after! autorevert
+  (global-auto-revert-mode t)
+  (setq global-auto-revert-non-file-buffers t)  ; Also auto-revert buffers like dired
+  (setq auto-revert-verbose nil))                ; Don't show a message every time a buffer is reverted
+
+;; Set the default ispell dictionary to en_US
+(after! ispell
+  (setq ispell-dictionary "en_US"))
+
+;; Set the auth-source files
+(after! auth-source
+  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg")))
+
+;; Set up grip
+(use-package! grip-mode
+  :config
+  (setq grip-update-after-change nil)
+  (require 'auth-source)
+  (let ((credential (auth-source-user-and-password "api.github.com")))
+    (setq grip-github-user (car credential)
+          grip-github-password (cadr credential))))
 
 ;; Keybindings with no package loading dependency
-(map! :desc "Avy goto char timer" "C-c j" #'avy-goto-char-timer
-
-      :map 'override
+(map! :map 'override
       :desc "Go to beginning of function" "C-M-;" #'beginning-of-defun
       :desc "Go to end of function" "C-M-'" #'end-of-defun
 
@@ -290,13 +295,14 @@
 
 ;; Custom variables (moved from custom.el and other parts of the file)
 (setq global-visual-line-mode t
-      ispell-dictionary "en_US"
       kill-whole-line t
-      magit-todos-insert-after '(bottom)
       tab-always-indent t
       display-line-numbers-type t
       org-directory "~/org/"
+
+      ;; Make the command key the M meta and option super ('s')
       mac-command-modifier 'meta
       mac-option-modifier 'super
-      comment-line-break-function nil
-      )
+
+      ;; Disable auto-comments
+      comment-line-break-function nil)
