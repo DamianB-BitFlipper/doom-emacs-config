@@ -293,6 +293,5 @@
       ispell-dictionary "en_US"
       kill-whole-line t
       magit-todos-insert-after '(bottom)
-      tab-always-indent t)
-
-;; Custom faces (if any were defined, they would go here)
+      tab-always-indent t
+      )
