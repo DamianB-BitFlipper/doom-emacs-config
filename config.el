@@ -36,11 +36,11 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+;; (Moved to bottom customize setq)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
+;; (Moved to bottom customize setq)
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -288,10 +288,15 @@
       :desc "Switch to left workspace" "w <left>"#'+workspace/switch-left
       :desc "Switch to right workspace" "w <right>" #'+workspace/switch-right)
 
-;; Custom variables (moved from custom.el)
+;; Custom variables (moved from custom.el and other parts of the file)
 (setq global-visual-line-mode t
       ispell-dictionary "en_US"
       kill-whole-line t
       magit-todos-insert-after '(bottom)
       tab-always-indent t
+      display-line-numbers-type t
+      org-directory "~/org/"
+      mac-command-modifier 'meta
+      mac-option-modifier 'super
+      comment-line-break-function nil
       )
