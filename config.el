@@ -267,12 +267,17 @@
 (after! python
   (remove-hook 'python-mode-hook #'poetry-tracking-mode))
 
+;; Enable auto-revert-mode for all buffers
+(global-auto-revert-mode t)
+(setq global-auto-revert-non-file-buffers t)  ; Also auto-revert buffers like dired
+(setq auto-revert-verbose nil)                ; Don't show a message every time a buffer is reverted
+
 ;; Keybindings with no package loading dependency
-(map! :map
-      'override
+(map! :desc "Avy goto char timer" "C-c j" #'avy-goto-char-timer
+
+      :map 'override
       :desc "Go to beginning of function" "C-M-;" #'beginning-of-defun
       :desc "Go to end of function" "C-M-'" #'end-of-defun
-      :desc "Avy goto char timer" "C-c j" #'avy-goto-char-timer
 
       :leader
       :desc "Compile" "c C" #'compile
