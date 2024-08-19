@@ -287,3 +287,12 @@
       :desc "Rename workspace" "w R" #'+workspace/rename
       :desc "Switch to left workspace" "w <left>"#'+workspace/switch-left
       :desc "Switch to right workspace" "w <right>" #'+workspace/switch-right)
+
+;; Custom variables (moved from custom.el)
+(setq global-visual-line-mode t
+      ispell-dictionary "en_US"
+      kill-whole-line t
+      magit-todos-insert-after '(bottom)
+      tab-always-indent t)
+
+;; Custom faces (if any were defined, they would go here)
