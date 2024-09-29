@@ -51,3 +51,10 @@
 
 (package! copilot
   :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el" "dist")))
+
+;; Add syntax highlighting for Dockerfiles
+(package! dockerfile-mode
+  :recipe (:host github :repo "spotify/dockerfile-mode" :files ("*.el")))
+
+(package! aider-mode
+  :recipe (:local-repo "~/Documents/my_code/aider-mode"))

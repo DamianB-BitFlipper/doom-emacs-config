@@ -266,6 +266,29 @@
 (after! ispell
   (setq ispell-dictionary "en_US"))
 
+;; Enable lsp-pyright for python files
+(use-package! lsp-pyright
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp)))  ; or lsp-deferred
+  :config
+  ;; Set the venv path to the .venv directory if it exists in
+  ;; the git root or current directory if not in a git repo
+  (defun lsp-pyright-set-venv-path ()
+    (let* ((git-root (locate-dominating-file default-directory ".git"))
+           (venv-path ".venv")
+           (full-venv-path (if git-root
+                               (expand-file-name venv-path git-root)
+                             (expand-file-name venv-path default-directory))))
+      (when (file-directory-p full-venv-path)
+        (setq-local lsp-pyright-venv-path full-venv-path))))
+
+  ;; Set the venv path before LSP is initialized
+  (add-hook 'lsp-before-open-hook
+            (lambda ()
+              (when (eq major-mode 'python-mode)
+                (lsp-pyright-set-venv-path)))))
+
 ;; Set the auth-source files
 (after! auth-source
   (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg")))
@@ -279,6 +302,22 @@
     (setq grip-github-user (car credential)
           grip-github-password (cadr credential))))
 
+;; Enable visual line mode globally
+(global-visual-line-mode t)
+
+;; Enable aider-mode globally
+(use-package! aider-mode
+  :custom
+  (aider-always-add-files '("CONVENTIONS.md"))
+  :config
+  (setq aider-display-method 'frame)
+  (require 'auth-source)
+  (let ((credential (auth-source-user-and-password "api.anthropic.com")))
+    (setq aider-cli-flags
+          (list "--anthropic-api-key" (cadr credential)
+                "--sonnet" "--dark-mode" "--no-auto-lint")))
+  (global-aider-mode t))
+
 ;; Keybindings with no package loading dependency
 (map! :map 'override
       :desc "Go to beginning of function" "C-M-;" #'beginning-of-defun
@@ -288,14 +327,15 @@
       :desc "Compile" "c C" #'compile
       :desc "Recompile" "c c" #'recompile
 
+      :desc "Vertico Project Search" "s p" #'+vertico/project-search
+
       :desc "Restore last session" "w r" #'+workspace/restore-last-session
       :desc "Rename workspace" "w R" #'+workspace/rename
       :desc "Switch to left workspace" "w <left>"#'+workspace/switch-left
       :desc "Switch to right workspace" "w <right>" #'+workspace/switch-right)
 
-;; Custom variables (moved from custom.el and other parts of the file)
-(setq global-visual-line-mode t
-      kill-whole-line t
+;; Custom variables
+(setq kill-whole-line t
       tab-always-indent t
       display-line-numbers-type t
       org-directory "~/org/"
