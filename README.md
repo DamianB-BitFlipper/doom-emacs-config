@@ -8,3 +8,6 @@
   - Then create a fine-grained access token on GitHub. No need for any repository access. 
     - This allows more access to the GitHub Markdown API
     - Add this configuration to `~/.authinfo` as per https://www.emacswiki.org/emacs/GnusAuthinfo
+      - machine: api.github.com
+      - login: <github username>
+      - password: <access token>
